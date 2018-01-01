@@ -4,15 +4,26 @@ const UILoader = require("./UILoader");
 cc.Class({
     extends: cc.Component,
 
-   
-
     onLoad () {
         UILoader.retainScene(this.node);
         MemoryDetector.showMemoryStatus();
+        let node = cc.director.getScene().children[1];
+        cc.game.addPersistRootNode(node);
+        
+        UILoader.playMusic(cc.url.raw("resources/man_0_chat_6.ogg"),true, 0.5);
+
+        // let id = UILoader.playEffect(cc.url.raw("resources/man_0_chat_5.ogg"), 0.5);
+        this.scheduleOnce(() => {
+            UILoader.playMusic(cc.url.raw("resources/man_0_chat_5.ogg"),true, 0.5);            
+        }, 10);
     },
 
     start () {
        
+    },
+
+    onLoaderPrefabClick0 () {
+        cc.director.loadScene("GameScene2");
     },
 
     onLoaderPrefabClick () {
@@ -44,5 +55,9 @@ cc.Class({
         })
     },
 
-    
+    onLoaderPrefabClick4 () {
+        UILoader.releaseStaticRes();
+    },
+
+
 });

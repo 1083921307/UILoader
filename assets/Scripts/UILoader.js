@@ -4,6 +4,18 @@ function initRetain(texture) {
     }
 }
 
+function initSceneRetain(texture) {
+    if (texture) {
+        if (texture.bk_retain == undefined || texture.bk_retain == null) {
+            texture.bk_retain = 1;
+            return false;
+        } else {
+            return true;
+        }
+    }
+    return false;
+}
+
 function parserPrefab(node, number) {
     // if (!(node instanceof cc.Scene)) {
     //     parserPrefabNode(node, number);
@@ -231,17 +243,16 @@ function deepCloneObj(obj) {
     return o;
 }
 
-
 function releaseNodeRes() {
-    
+
     var dependAssets = cc.director.getScene().dependAssets;
 
     var texturesInCache = deepCloneObj(cc.loader._cache);
 
     var release_key = [];
-  
+
     for (var asset in texturesInCache) {
-     
+
         if (texturesInCache[asset].isStatic) {
             continue;
         }
@@ -299,7 +310,7 @@ function releaseStaticRes(tag) {
     var texturesInCache = deepCloneObj(cc.loader._cache);
 
     var release_key = [];
-  
+
     for (var asset in texturesInCache) {
         if (tag) {
             if (texturesInCache[asset].cusTag != tag) {
@@ -307,9 +318,13 @@ function releaseStaticRes(tag) {
             }
         }
 
-        if (texturesInCache[asset].isStatic) {
-            texturesInCache[asset].retain = 0
+        if (texturesInCache[asset].retain > 0 && texturesInCache[asset].isStatic) {
+            cc.log(`${asset} 还在使用中..., 该纹理不会释放`);
+            continue;
         }
+        // if (texturesInCache[asset].isStatic) {
+        //     texturesInCache[asset].retain -= 1;
+        // }
 
         if (texturesInCache[asset].retain <= 0) {
             release_key.push(texturesInCache[asset].url);
@@ -336,7 +351,7 @@ function releaseStaticRes(tag) {
         }
     }
 
- 
+
     for (var asset in cc.loader._cache) {
         if (cc.loader._cache[asset].dependKeys && cc.loader._cache[asset].dependKeys.length > 0) {
             var is_release = false;
@@ -366,10 +381,11 @@ function replaceButtonTexture(target, normalSprite, newNormalSprite) {
     target[normalSprite] = newNormalSprite;
 }
 
-
+var key_map = {};
+var audioPath = null;
 
 const UILoader = {
-    
+
     loadRes(path, type, callback) {
         cc.loader.loadRes(path, type, (err, asset) => {
             if (err) {
@@ -415,7 +431,7 @@ const UILoader = {
         let sprite = target.getComponent(cc.Sprite);
 
         replaceButtonTexture(sprite, "spriteFrame", spriteFrame);
-    
+
         releaseNodeRes();
     },
 
@@ -460,7 +476,10 @@ const UILoader = {
         parserPrefab(node_prefab, 1);
     },
 
- 
+    releaseStaticRes(tag) {
+        releaseStaticRes(tag);
+    },
+
     destroy(node) {
         if (!node instanceof cc.Node) {
             cc.log("你要销毁的不是一个节点");
@@ -469,7 +488,83 @@ const UILoader = {
         parserPrefab(node, -1);
         node.destroy();
         releaseNodeRes();
+    },
+
+    beforeSceneLoading(event, detail) {
+        key_map = {};
+        var dependAssets = event.currentTarget._scene.dependAssets;
+        if (dependAssets && dependAssets.length > 0) {
+            for (var i = 0; i < dependAssets.length; i++) {
+                if (cc.loader._cache[dependAssets[i]] && cc.loader._cache[dependAssets[i]].isStatic) {
+                    key_map[i] = dependAssets[i];
+                    delete dependAssets[i];
+                }
+
+                if (initSceneRetain(cc.loader._cache[dependAssets[i]])) {
+                    cc.loader._cache[dependAssets[i]].retain -= 1;
+                }
+            }
+        }
+
+        var keys = Object.keys(cc.loader._cache);
+        keys.forEach((key) => {
+            if (cc.loader._cache[key] && !cc.loader._cache[key].isStatic && cc.loader._cache[key].retain > 0) {
+                if (initSceneRetain(cc.loader._cache[key])) {
+                    cc.loader._cache[key].retain = 0;
+                }
+            }
+        });
+    },
+
+    afterSceneLaunch(event, detail) {
+        for (var key in key_map) {
+            event.currentTarget._scene.dependAssets[key] = key_map[key];
+        }
+        var dependAssets = event.currentTarget._scene.dependAssets;
+        if (dependAssets && dependAssets.length > 0) {
+            for (var i = dependAssets.length - 1; i >= 0; i--) {
+                if (cc.loader._cache[dependAssets[i]] && cc.loader._cache[dependAssets[i]].isStatic) {
+                    continue;
+                }
+                if (initSceneRetain(cc.loader._cache[dependAssets[i]])) {
+                    cc.loader._cache[dependAssets[i]].retain += 1;
+                }
+
+            }
+        }
+        releaseNodeRes();
+    },
+
+    playEffect(path, volume) {
+        if (!path || !volume) {
+            cc.log("参数错误");
+            return;
+        }
+        let audioID = cc.audioEngine.play(path, false, volume);
+        cc.audioEngine.setFinishCallback(audioID,  (ss, ss11) => {
+            cc.loader.release(cc.loader._cache[ss.target.src].url);
+        });
+        return audioID;
+    },
+
+    playMusic(path, loop, volume) {
+        if (!path || !volume) {
+            cc.log("参数错误");
+            return;
+        }
+        if (audioPath) {
+            cc.loader.release(cc.loader._cache[audioPath].url);
+        }
+        audioPath = path;
+        let audioID = cc.audioEngine.playMusic(path, loop, volume);
+        cc.audioEngine.setFinishCallback(audioID,  (ss, ss11) => {
+            cc.log("触发回调函数");
+            cc.loader.release(cc.loader._cache[ss.target.src].url);
+        });
+        return audioID;
     }
+
+
 };
 
 module.exports = UILoader;
