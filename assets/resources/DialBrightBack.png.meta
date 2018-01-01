@@ -1,14 +1,14 @@
 {
   "ver": "1.0.0",
-  "uuid": "508b60f7-4da6-4891-bc39-e1a5c1b1251a",
+  "uuid": "90aedce5-c661-4a30-b321-80e39a07c762",
   "type": "sprite",
   "wrapMode": "clamp",
   "filterMode": "bilinear",
   "subMetas": {
-    "roomtype1_n_1": {
+    "DialBrightBack": {
       "ver": "1.0.3",
-      "uuid": "798a757a-5d10-4a3f-a296-6dddda5ee4bc",
-      "rawTextureUuid": "508b60f7-4da6-4891-bc39-e1a5c1b1251a",
+      "uuid": "99c3824d-c7f8-4924-b790-ce9ccd7e912c",
+      "rawTextureUuid": "90aedce5-c661-4a30-b321-80e39a07c762",
       "trimType": "auto",
       "trimThreshold": 1,
       "rotated": false,
@@ -16,10 +16,10 @@
       "offsetY": 0,
       "trimX": 0,
       "trimY": 0,
-      "width": 310,
-      "height": 488,
-      "rawWidth": 310,
-      "rawHeight": 488,
+      "width": 578,
+      "height": 579,
+      "rawWidth": 578,
+      "rawHeight": 579,
       "borderTop": 0,
       "borderBottom": 0,
       "borderLeft": 0,

@@ -39,7 +39,7 @@ cc.Class({
 
     onLoaderPrefabClick3 () {
         let spriteNode = this.node.getChildByName("icon_sprite");
-        UILoader.loadStaticRes("roomtype1_s_5", cc.SpriteFrame, "hall",(spriteFrame) => {
+        UILoader.loadStaticRes("HotProgress2", cc.SpriteFrame, "hall",(spriteFrame) => {
             UILoader.replaceSpriteTexture(spriteNode, spriteFrame);
         })
     },
