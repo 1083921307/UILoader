@@ -1,14 +1,14 @@
 {
-  "start-scene": "current",
-  "group-list": [
-    "default"
-  ],
   "collision-matrix": [
     [
       true
     ]
   ],
   "excluded-modules": [],
+  "group-list": [
+    "default"
+  ],
+  "start-scene": "current",
   "design-resolution-width": 960,
   "design-resolution-height": 640,
   "fit-width": false,
