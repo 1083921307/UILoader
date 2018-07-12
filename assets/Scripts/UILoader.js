@@ -6,8 +6,8 @@ function initRetain(texture) {
 
 function initSceneRetain(texture) {
     if (texture) {
-        if (texture.bk_retain == undefined || texture.bk_retain == null) {
-            texture.bk_retain = 1;
+        if (texture.retain == undefined || texture.retain == null) {
+            texture.retain = 1;
             return false;
         } else {
             return true;
